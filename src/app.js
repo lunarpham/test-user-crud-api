@@ -4,7 +4,6 @@ import userRoute from "./routes/user.routes.js";
 import { sequelize, connect } from "./config/db.config.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger.json" with { type: "json" };
-import serverless from "serverless-http";
 
 const app = express();
 app.use(cors({
@@ -34,5 +33,3 @@ async function startServer() {
 }
 
 startServer();
-
-export const handler = serverless(app);
