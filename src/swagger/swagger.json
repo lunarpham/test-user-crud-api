@@ -9,6 +9,10 @@
     {
       "url": "http://localhost:3000",
       "description": "Development server"
+    },
+    {
+      "url": "https://test-user-crud-api-215742463493.asia-northeast1.run.app",
+      "description": "Production server"
     }
   ],
   "tags": [
