@@ -19,8 +19,8 @@ export const create = async (req, res) => {
 
     const user = {
       id: uuidv4(),
-      name: req.body.name,
-      email: req.body.email,
+      name: req.body.name.trim(),
+      email: req.body.email.trim(),
       age: req.body.age || null,
     };
 
@@ -67,7 +67,7 @@ export const update = async (req, res) => {
       return res.status(409).json({ message: "Version conflict" });
     }
 
-    // Update user properties
+    // Update user properties - validation already handled by middleware
     if (req.body.name) user.name = req.body.name;
     if (req.body.email) user.email = req.body.email;
     if (req.body.age !== undefined) user.age = req.body.age;
