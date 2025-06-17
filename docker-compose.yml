@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST_DB=${HOST_DB}
+      - PORT_DB=${PORT_DB}
+      - DATABASE=${DATABASE}
+      - USER_DB=${USER_DB}
+      - PASSWORD_DB=${PASSWORD_DB}
