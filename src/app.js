@@ -4,13 +4,15 @@ import userRoute from "./routes/user.routes.js";
 import { sequelize, connect } from "./config/db.config.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger.json" with { type: "json" };
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(cors({
   origin: "*"
 }));
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -23,7 +25,7 @@ async function startServer() {
     await sequelize.sync({ force: false }); // Sync models
     console.log("Database synchronized");
 
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
       console.log(`Example app listening at http://0.0.0.0:${port}`);
     });
   } catch (err) {
