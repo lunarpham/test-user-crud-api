@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "User CRUD API",
-    "description": "API for managing user data",
+    "title": "User CRUD API with Authentication",
+    "description": "API for managing users, authentication, and projects with JWT-based security",
     "version": "1.0.0"
   },
   "servers": [
@@ -17,17 +17,436 @@
   ],
   "tags": [
     {
+      "name": "Authentication",
+      "description": "API endpoints for user authentication"
+    },
+    {
       "name": "Users",
       "description": "API endpoints for user management"
+    },
+    {
+      "name": "Projects",
+      "description": "API endpoints for project management"
     }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "age": {
+            "type": "integer",
+            "nullable": true,
+            "example": 30
+          }
+        },
+        "required": ["id", "name", "email"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": ["user", "token"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 20,
+            "example": "mypassword123"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9.\\-'\\s]+$",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "example": "john@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 20,
+            "example": "mypassword123"
+          },
+          "age": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 120,
+            "example": 30
+          }
+        },
+        "required": ["name", "email", "password"]
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9.\\-'\\s]+$",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "example": "john@example.com"
+          },
+          "age": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 120,
+            "example": 30
+          }
+        },
+        "required": ["name", "email"]
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9.\\-'\\s]+$",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "example": "john@example.com"
+          },
+          "age": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 120,
+            "example": 30
+          }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Website Redesign"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "example": "Complete redesign of the company website"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "default": "pending",
+            "example": "in_progress"
+          },
+          "userId": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "minItems": 1,
+            "example": [1, 2, 3],
+            "description": "Array of user IDs assigned to this project (no duplicates allowed)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-27T10:30:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-27T10:30:00Z"
+          }
+        },
+        "required": ["id", "title", "status", "userId"]
+      },
+      "CreateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9.\\-'\\s]+$",
+            "example": "Website Redesign",
+            "description": "Project title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "example": "Complete redesign of the company website"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "default": "pending",
+            "example": "pending"
+          },
+          "userId": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "example": [1, 2],
+            "description": "Array of user IDs to assign to this project (must contain at least one user, no duplicates)"
+          }
+        },
+        "required": ["title", "userId"]
+      },
+      "UpdateProjectRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9.\\-'\\s]+$",
+            "example": "Website Redesign"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "example": "Complete redesign of the company website"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "example": "in_progress"
+          },
+          "userId": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "example": [1, 2, 3],
+            "description": "Array of user IDs to assign to this project (must contain at least one user, no duplicates)"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Error description"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Validation error 1", "Validation error 2"]
+          }
+        }
+      }
+    }
+  },
   "paths": {
-    "/api/users": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account with encrypted password",
+        "operationId": "register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User with this email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "description": "Authenticate user and return JWT token",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
       "get": {
         "tags": ["Users"],
         "summary": "Get all users",
-        "description": "Returns a list of all users",
-        "operationId": "findAll",
+        "description": "Returns a list of all users (excluding password field). Currently unprotected - consider adding authentication.",
+        "operationId": "findAllUsers",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -50,14 +469,14 @@
       "post": {
         "tags": ["Users"],
         "summary": "Create a new user",
-        "description": "Add a new user to the database",
-        "operationId": "create",
+        "description": "Add a new user to the database (no password required, unprotected endpoint)",
+        "operationId": "createUser",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewUser"
+                "$ref": "#/components/schemas/CreateUserRequest"
               }
             }
           }
@@ -74,7 +493,14 @@
             }
           },
           "400": {
-            "description": "Invalid input - Name and email are required"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "409": {
             "description": "User with this email already exists"
@@ -85,12 +511,12 @@
         }
       }
     },
-    "/api/users/{id}": {
+    "/api/v1/users/{id}": {
       "get": {
         "tags": ["Users"],
         "summary": "Get user by ID",
-        "description": "Returns a single user by ID",
-        "operationId": "findOne",
+        "description": "Returns a single user by ID. Currently unprotected - consider adding authentication.",
+        "operationId": "findUserById",
         "parameters": [
           {
             "name": "id",
@@ -98,8 +524,9 @@
             "description": "ID of user to return",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
             }
           }
         ],
@@ -110,6 +537,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -125,8 +562,9 @@
       "put": {
         "tags": ["Users"],
         "summary": "Update an existing user",
-        "description": "Update a user by ID with optimistic concurrency control using version field",
-        "operationId": "update",
+        "description": "Update a user by ID (requires authentication and user can only update their own profile)",
+        "operationId": "updateUser",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -134,8 +572,9 @@
             "description": "ID of user to update",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
             }
           }
         ],
@@ -144,7 +583,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateUser"
+                "$ref": "#/components/schemas/UpdateUserRequest"
               }
             }
           }
@@ -161,13 +600,26 @@
             }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input or ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - No token provided"
+          },
+          "403": {
+            "description": "Forbidden - Invalid token or unauthorized user"
           },
           "404": {
             "description": "User not found"
           },
           "409": {
-            "description": "Version conflict - another user has updated this record"
+            "description": "User with this email already exists"
           },
           "500": {
             "description": "Internal server error"
@@ -177,8 +629,9 @@
       "delete": {
         "tags": ["Users"],
         "summary": "Delete a user",
-        "description": "Delete a user by ID",
-        "operationId": "delete",
+        "description": "Delete a user by ID (requires authentication and user can only delete their own profile)",
+        "operationId": "deleteUser",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -186,14 +639,31 @@
             "description": "ID of user to delete",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
             }
           }
         ],
         "responses": {
           "204": {
             "description": "User deleted successfully (No Content)"
+          },
+          "400": {
+            "description": "Invalid ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - No token provided"
+          },
+          "403": {
+            "description": "Forbidden - Invalid token or unauthorized user"
           },
           "404": {
             "description": "User not found"
@@ -203,84 +673,242 @@
           }
         }
       }
-    }
-  },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "/api/v1/projects": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get all projects",
+        "description": "Returns a list of all projects (currently unprotected)",
+        "operationId": "findAllProjects",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
           },
-          "name": {
-            "type": "string",
-            "example": "John Doe"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "john@example.com"
-          },
-          "age": {
-            "type": "integer",
-            "nullable": true,
-            "example": 30
-          },
-          "version": {
-            "type": "integer",
-            "example": 1,
-            "description": "Used for optimistic concurrency control"
+          "500": {
+            "description": "Internal server error"
           }
-        },
-        "required": ["id", "name", "email", "version"]
+        }
       },
-      "NewUser": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "John Doe"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "john@example.com"
-          },
-          "age": {
-            "type": "integer",
-            "nullable": true,
-            "example": 30
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create a new project",
+        "description": "Add a new project to the database (requires authentication). All user IDs in the userId array must exist.",
+        "operationId": "createProject",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
           }
         },
-        "required": ["name", "email"]
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - No token provided"
+          },
+          "403": {
+            "description": "Forbidden - Invalid token"
+          },
+          "404": {
+            "description": "One or more users not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get project by ID",
+        "description": "Returns a single project by ID (currently unprotected)",
+        "operationId": "findProjectById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of project to return",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       },
-      "UpdateUser": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "John Doe"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "john@example.com"
-          },
-          "age": {
-            "type": "integer",
-            "nullable": true,
-            "example": 30
-          },
-          "version": {
-            "type": "integer",
-            "example": 1,
-            "description": "Current version of the user record (required for updates)"
+      "put": {
+        "tags": ["Projects"],
+        "summary": "Update an existing project",
+        "description": "Update a project by ID (requires authentication). All user IDs in the userId array must exist.",
+        "operationId": "updateProject",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of project to update",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            }
           }
         },
-        "required": ["version"]
+        "responses": {
+          "200": {
+            "description": "Project updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - No token provided"
+          },
+          "403": {
+            "description": "Forbidden - Invalid token"
+          },
+          "404": {
+            "description": "Project not found or one or more users not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete a project",
+        "description": "Delete a project by ID (requires authentication)",
+        "operationId": "deleteProject",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of project to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Project deleted successfully (No Content)"
+          },
+          "400": {
+            "description": "Invalid ID parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - No token provided"
+          },
+          "403": {
+            "description": "Forbidden - Invalid token"
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     }
   }

@@ -9,3 +9,4 @@ services:
       - DATABASE=${DATABASE}
       - USER_DB=${USER_DB}
       - PASSWORD_DB=${PASSWORD_DB}
+      - SECRET_KEY=${SECRET_KEY}

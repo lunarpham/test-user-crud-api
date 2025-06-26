@@ -4,4 +4,4 @@ COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
 EXPOSE 8080
-CMD ["npm", "run", "dev"]
+CMD ["sh", "-c", "npm run seed && npm run dev"]

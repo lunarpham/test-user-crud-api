@@ -1,10 +1,14 @@
 import express from "express";
 import cors from "cors";
 import userRoute from "./routes/user.routes.js";
+import projectRoute from "./routes/project.routes.js";
+import authRoute from "./routes/auth.routes.js";
 import { sequelize, connect } from "./config/db.config.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger.json" with { type: "json" };
 import dotenv from "dotenv";
+import "./models/index.js"
 dotenv.config();
 
 const app = express();
@@ -16,8 +20,12 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use("/api/users", userRoute);
+app.use("/api/v1/users", userRoute);
+app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/projects", projectRoute);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use(errorHandler)
 
 async function startServer() {
   try {
