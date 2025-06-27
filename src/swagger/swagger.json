@@ -139,6 +139,13 @@
             "maxLength": 255,
             "example": "john@example.com"
           },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 20,
+            "example": "mypassword123",
+            "description": "Password is required for user creation"
+          },
           "age": {
             "type": "integer",
             "nullable": true,
@@ -147,7 +154,7 @@
             "example": 30
           }
         },
-        "required": ["name", "email"]
+        "required": ["name", "email", "password"]
       },
       "UpdateUserRequest": {
         "type": "object",
@@ -445,8 +452,9 @@
       "get": {
         "tags": ["Users"],
         "summary": "Get all users",
-        "description": "Returns a list of all users (excluding password field). Currently unprotected - consider adding authentication.",
+        "description": "Returns a list of all users (excluding password field). Requires authentication.",
         "operationId": "findAllUsers",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -461,16 +469,44 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
         "tags": ["Users"],
         "summary": "Create a new user",
-        "description": "Add a new user to the database (no password required, unprotected endpoint)",
+        "description": "Add a new user to the database (requires authentication and password)",
         "operationId": "createUser",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -502,11 +538,45 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "409": {
-            "description": "User with this email already exists"
+            "description": "User with this email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -515,8 +585,9 @@
       "get": {
         "tags": ["Users"],
         "summary": "Get user by ID",
-        "description": "Returns a single user by ID. Currently unprotected - consider adding authentication.",
+        "description": "Returns a single user by ID. Requires authentication.",
         "operationId": "findUserById",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -551,18 +622,52 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "User not found"
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "put": {
         "tags": ["Users"],
         "summary": "Update an existing user",
-        "description": "Update a user by ID (requires authentication and user can only update their own profile)",
+        "description": "Update a user by ID (requires authentication - WARNING: Currently allows updating any user, not just own profile)",
         "operationId": "updateUser",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -610,26 +715,61 @@
             }
           },
           "401": {
-            "description": "Unauthorized - No token provided"
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - Invalid token or unauthorized user"
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "User not found"
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "409": {
-            "description": "User with this email already exists"
+            "description": "User with this email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "delete": {
         "tags": ["Users"],
         "summary": "Delete a user",
-        "description": "Delete a user by ID (requires authentication and user can only delete their own profile)",
+        "description": "Delete a user by ID (requires authentication - WARNING: Currently allows deleting any user, not just own profile)",
         "operationId": "deleteUser",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -660,16 +800,44 @@
             }
           },
           "401": {
-            "description": "Unauthorized - No token provided"
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - Invalid token or unauthorized user"
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "User not found"
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -678,8 +846,9 @@
       "get": {
         "tags": ["Projects"],
         "summary": "Get all projects",
-        "description": "Returns a list of all projects (currently unprotected)",
+        "description": "Returns a list of all projects. Requires authentication.",
         "operationId": "findAllProjects",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -694,8 +863,35 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -737,16 +933,44 @@
             }
           },
           "401": {
-            "description": "Unauthorized - No token provided"
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - Invalid token"
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "One or more users not found"
+            "description": "One or more users not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -755,8 +979,9 @@
       "get": {
         "tags": ["Projects"],
         "summary": "Get project by ID",
-        "description": "Returns a single project by ID (currently unprotected)",
+        "description": "Returns a single project by ID. Requires authentication.",
         "operationId": "findProjectById",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -791,11 +1016,45 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Project not found"
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -850,16 +1109,44 @@
             }
           },
           "401": {
-            "description": "Unauthorized - No token provided"
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - Invalid token"
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Project not found or one or more users not found"
+            "description": "Project not found or one or more users not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -897,16 +1184,44 @@
             }
           },
           "401": {
-            "description": "Unauthorized - No token provided"
+            "description": "Unauthorized - No token provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - Invalid token"
+            "description": "Forbidden - Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Project not found"
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }

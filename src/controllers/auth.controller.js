@@ -23,7 +23,7 @@ export const register = async (req, res) => {
 
     const newUser = await User.create(user);
     const { password, ...userWithoutPassword } = newUser.toJSON(); // Exclude password from response
-    return res.status(201).json({ userWithoutPassword });
+    return res.status(201).json(userWithoutPassword);
   } catch (error) {
     console.error("Error registering user:", error);
     return res.status(500).json({ message: "Internal server error" });

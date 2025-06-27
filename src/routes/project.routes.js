@@ -13,8 +13,13 @@ router.post(
   validateProjectDataFormat,
   ProjectController.createProject
 );
-router.get("/", ProjectController.getAllProjects);
-router.get("/:id", validateIdParam, ProjectController.getProjectById);
+router.get("/", verifyToken, ProjectController.getAllProjects);
+router.get(
+  "/:id",
+  validateIdParam,
+  verifyToken,
+  ProjectController.getProjectById
+);
 router.put(
   "/:id",
   validateIdParam,

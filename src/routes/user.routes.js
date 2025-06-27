@@ -7,9 +7,9 @@ import {
 import { verifyToken } from "../middleware/authJwt.js";
 
 const router = express.Router();
-router.post("/", validateUserDataFormat, UserController.create);
-router.get("/", UserController.findAll);
-router.get("/:id", validateIdParam, UserController.findById);
+router.post("/", verifyToken, validateUserDataFormat, UserController.create);
+router.get("/", verifyToken, UserController.findAll);
+router.get("/:id", validateIdParam, verifyToken, UserController.findById);
 router.put(
   "/:id",
   validateIdParam,

@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import { hashPassword } from "../utils/passwordHelper.js";
 
 export const create = async (req, res) => {
   try {
@@ -16,6 +17,7 @@ export const create = async (req, res) => {
       name: req.body.name.trim(),
       email: req.body.email.trim(),
       age: req.body.age || null,
+      password: await hashPassword(req.body.password),
     };
 
     const newUser = await User.create(user);
@@ -59,10 +61,6 @@ export const findById = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    if (String(req.params.id) !== String(req.user.id)) {
-      return res.status(403).json({ message: "Forbidden: unauthorized user" });
-    }
-
     const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -96,10 +94,6 @@ export const update = async (req, res) => {
 
 export const deleteById = async (req, res) => {
   try {
-    if (String(req.params.id) !== String(req.user.id)) {
-      return res.status(403).json({ message: "Forbidden: unauthorized user" });
-    }
-
     const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
