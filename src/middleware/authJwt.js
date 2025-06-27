@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -10,7 +11,7 @@ export const generateToken = (user) => {
   return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1h" });
 };
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token =
     authHeader && authHeader.startsWith("Bearer ")
@@ -21,12 +22,20 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-    req.user = decoded;
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
+    // Check if user still exists in database
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res
+        .status(403)
+        .json({ message: "Token is expired as the user is no longer exist" });
+    }
+
+    req.user = decoded;
     next();
-  });
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
 };
