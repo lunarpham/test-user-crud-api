@@ -74,6 +74,31 @@ The `Project` model has the following fields:
 - `userId` (array of integers, required; references assigned users)
 - `createdAt` / `updatedAt` (timestamps)
 
+## Authentication
+
+- Register and login endpoints are available under `/api/v1/auth`.
+- Users and Projects CRUD operations are protected by JWT Token.
+- Passwords are hashed using bcryptjs.
+
+## API Documentation
+
+- Swagger UI is available at `/api-docs` after starting the server.
+- The OpenAPI spec is located at `src/swagger/swagger.json`.
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```plaintext
+HOST_DB = "POSTGRES_HOST"
+PORT_DB = "5432"
+DATABASE = "DATABASE_NAME"
+USER_DB = "POSTGRES_USER"
+PASSWORD_DB = "POSTGRES_PASSWORD"
+SECRET_KEY = "YOUR_SECRET_KEY"
+PORT = "8080"
+```
+
 ## Running Locally
 
 1. Install dependencies:
