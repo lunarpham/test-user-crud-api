@@ -2,7 +2,8 @@ services:
   app:
     build: .
     ports:
-      - "8080:3000"
+      - "8080:8080"
+    
     environment:
       - HOST_DB=${HOST_DB}
       - PORT_DB=${PORT_DB}
@@ -10,3 +11,5 @@ services:
       - USER_DB=${USER_DB}
       - PASSWORD_DB=${PASSWORD_DB}
       - SECRET_KEY=${SECRET_KEY}
+      - PORT=${PORT}
+    network_mode: "bridge"

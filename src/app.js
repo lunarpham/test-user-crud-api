@@ -16,7 +16,8 @@ app.use(cors({
   origin: "*"
 }));
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
+const host = "0.0.0.0";
 
 app.use(express.json());
 
@@ -33,8 +34,8 @@ async function startServer() {
     await sequelize.sync({ force: false }); // Sync models
     console.log("Database synchronized");
 
-    app.listen(port, "0.0.0.0", () => {
-      console.log(`Example app listening at http://0.0.0.0:${port}`);
+    app.listen(port, host, () => {
+      console.log(`Example app listening at http://${host}:${port}`);
     });
   } catch (err) {
     console.error("Failed to start server:", err);
