@@ -26,12 +26,14 @@ export const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
     // Check if user still exists in database
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ["password"] },
+    });
     if (!user) {
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    req.user = decoded;
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
