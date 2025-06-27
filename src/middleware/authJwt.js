@@ -28,14 +28,12 @@ export const verifyToken = async (req, res, next) => {
     // Check if user still exists in database
     const user = await User.findByPk(decoded.id);
     if (!user) {
-      return res
-        .status(403)
-        .json({ message: "Token is expired as the user is no longer exist" });
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
 
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
