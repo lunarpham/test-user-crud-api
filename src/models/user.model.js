@@ -14,18 +14,15 @@ const User = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      notEmpty: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      notEmpty: true,
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      notEmpty: true,
     },
     age: {
       type: DataTypes.BIGINT,

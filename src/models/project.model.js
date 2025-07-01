@@ -30,10 +30,6 @@ const Project = sequelize.define(
       type: DataTypes.ENUM("pending", "in_progress", "completed"),
       defaultValue: "pending",
     },
-    userId: {
-      type: DataTypes.ARRAY(DataTypes.BIGINT),
-      allowNull: false,
-    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

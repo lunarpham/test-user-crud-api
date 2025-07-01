@@ -1,7 +1,7 @@
 import express from "express";
 import * as ProjectController from "../controllers/project.controller.js";
 import {
-  validateProjectDataFormat,
+  validateProjectData,
   validateIdParam,
 } from "../utils/inputDataHelper.js";
 import { verifyToken } from "../middleware/authJwt.js";
@@ -10,7 +10,7 @@ const router = express.Router();
 router.post(
   "/",
   verifyToken,
-  validateProjectDataFormat,
+  validateProjectData,
   ProjectController.createProject
 );
 router.get("/", verifyToken, ProjectController.getAllProjects);
@@ -24,7 +24,7 @@ router.put(
   "/:id",
   validateIdParam,
   verifyToken,
-  validateProjectDataFormat,
+  validateProjectData,
   ProjectController.updateProject
 );
 router.delete(

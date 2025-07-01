@@ -36,28 +36,23 @@ const projectDescriptions = [
 
 const statuses = ["pending", "in_progress", "completed"];
 
-const generateRandomProject = (index, availableUserIds) => {
+const generateRandomProject = (index) => {
   const title = projectTitles[index % projectTitles.length];
   const description = projectDescriptions[index % projectDescriptions.length];
   const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-  // Assign 1-4 random users to each project
-  const numberOfUsers = Math.floor(Math.random() * 4) + 1;
-  const shuffledUserIds = [...availableUserIds].sort(() => 0.5 - Math.random());
-  const userId = shuffledUserIds.slice(0, numberOfUsers);
 
   return {
     title,
     description,
     status,
-    userId,
+    // Remove userId array - relationships will be handled separately
   };
 };
 
-export const generateProjects = (count = 10, availableUserIds) => {
+export const generateProjects = (count = 10) => {
   const projects = [];
   for (let i = 0; i < count; i++) {
-    const project = generateRandomProject(i, availableUserIds);
+    const project = generateRandomProject(i);
     projects.push(project);
   }
   return projects;
