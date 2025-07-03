@@ -62,3 +62,27 @@ export const login = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const refreshToken = async (req, res) => {
+  try {
+    // req.user is set by verifyToken middleware
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ["password"] },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate a fresh token
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      user,
+      token,
+    });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
