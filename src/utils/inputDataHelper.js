@@ -16,8 +16,11 @@ export const validateUserData = [
   body("name")
     .if((value, { req }) => {
       // Required for POST requests to / and /register
+      // For PUT requests, validate if it's provided
       return (
-        req.method === "POST" && (req.path === "/" || req.path === "/register")
+        (req.method === "POST" &&
+          (req.path === "/" || req.path === "/register")) ||
+        (req.method === "PUT" && value !== undefined)
       );
     })
     .notEmpty()
@@ -34,7 +37,10 @@ export const validateUserData = [
   body("email")
     .if((value, { req }) => {
       // Required for POST requests
-      return req.method === "POST";
+      // For PUT requests, validate if it's provided
+      return (
+        req.method === "POST" || (req.method === "PUT" && value !== undefined)
+      );
     })
     .notEmpty()
     .withMessage("Email is required")
@@ -50,9 +56,13 @@ export const validateUserData = [
   body("password")
     .if((value, { req }) => {
       // Required for register, login, and user creation
+      // For PUT requests, validate if it's provided but don't require it
       return (
-        req.method === "POST" &&
-        (req.path === "/register" || req.path === "/login" || req.path === "/")
+        (req.method === "POST" &&
+          (req.path === "/register" ||
+            req.path === "/login" ||
+            req.path === "/")) ||
+        (req.method === "PUT" && value !== undefined)
       );
     })
     .notEmpty()
@@ -78,8 +88,12 @@ export const validateUserData = [
 export const validateProjectData = [
   body("title")
     .if((value, { req }) => {
-      // Required only for creating new projects
-      return req.method === "POST" && req.path === "/";
+      // Required for creating new projects (POST)
+      // For PUT requests, validate if it's provided
+      if (req.method === "POST" && req.path === "/") {
+        return true;
+      }
+      return req.method === "PUT" && value !== undefined;
     })
     .notEmpty()
     .withMessage("Title is required")
@@ -114,7 +128,11 @@ export const validateProjectData = [
   body("userId")
     .if((value, { req }) => {
       // Required only for creating new projects
-      return req.method === "POST" && req.path === "/";
+      // For PUT requests, validate if it's provided
+      if (req.method === "POST" && req.path === "/") {
+        return true;
+      }
+      return req.method === "PUT" && value !== undefined;
     })
     .notEmpty()
     .withMessage("UserId is required")
