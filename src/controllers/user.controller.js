@@ -79,13 +79,24 @@ export const update = async (req, res) => {
     }
 
     // Update user properties - validation already handled by middleware
+    let passwordChanged = false;
     if (req.body.name) user.name = req.body.name;
     if (req.body.email) user.email = req.body.email;
     if (req.body.age !== undefined) user.age = req.body.age;
+    if (req.body.password) {
+      user.password = await hashPassword(req.body.password);
+      passwordChanged = true;
+    }
 
     const updatedUser = await user.save();
     const { password, ...userWithoutPassword } = updatedUser.toJSON(); // Exclude password from response
-    return res.status(200).json(userWithoutPassword);
+
+    const response = {
+      ...userWithoutPassword,
+      ...(passwordChanged && { message: "Password updated successfully" }),
+    };
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal server error" });
